@@ -1,26 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import Todos from "./Todos";
+import AddForm from "./AddForm";
+import Loader from "./loader";
+import { connect } from "react-redux";
 
-function App() {
+function App({ todos, fetchTodos, loading }) {
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
+  console.log(loading);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="todo-app container">
+      <h1 className="center blue-text">Todo's</h1>
+      {loading && <Loader style={{ marginLeft: "30em" }} />}
+      <Todos todos={todos} />
+      <AddForm />
     </div>
   );
 }
 
-export default App;
+const mapStateToProps = state => {
+  return {
+    todos: state.todos,
+    loading: state.loading
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    fetchTodos: () => {
+      fetch("https://jsonplaceholder.typicode.com/todos")
+        .then(res => res.json())
+        .then(data => {
+          dispatch({ type: "FETCH_TODOS", payload: data.slice(0, 10) });
+          dispatch({ type: "LOADING_TODOS", payload: false });
+        });
+    }
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);
